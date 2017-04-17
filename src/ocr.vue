@@ -29,11 +29,18 @@ export default {
       steps: ['draw text', 'detect text area', 'adjust grid', 'split', 'compare'],
       step: 0,
       detect: {},
-      lib: window.lib,
+      lib: util.fontLib,
       showResult: false
     }
   },
   mounted () {
+    for (let i = 48; i < 91; i++) {
+      if (i > 57 && i < 65) {
+        continue
+      }
+      util.addFont(String.fromCharCode(i), `sans-serif`)
+    }
+
     this.$nextTick(() => {
       Object.assign(this.$refs.cvs, config.canvas)
       this.$refs.cvs.style.width = config.canvas.width + 'px'
