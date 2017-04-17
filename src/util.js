@@ -10,7 +10,7 @@ const config = {
     size: 200
   },
   grid: 32,
-  like: 0.2,
+  like: 0.35,
   grayThreshold: 128
 }
 
@@ -123,7 +123,8 @@ exports.generateGridData = function (data, size) {
           px.push(arr[y * step + x * size * step + yy + xx * size])
         }
       }
-      gridData[y + x * grid] = px.filter(p => !!p).length / px.length
+      const percent = px.filter(p => !!p).length / px.length
+      gridData[y + x * grid] = percent > config.like * 2 ? percent : 0
     }
   }
   return gridData
@@ -155,6 +156,10 @@ exports.setSize = function (cvs, size) {
   cvs.height = size
   cvs.style.width = size + 'px'
   cvs.style.height = size + 'px'
+}
+
+exports.clearCanvas = function (cvs) {
+  cvs.getContext('2d').clearRect(0, 0, cvs.width, cvs.height)
 }
 
 /**
@@ -190,8 +195,6 @@ exports.addFont = function (str, font) {
   const imgData = ctx.getImageData(rect.X, rect.Y, rect.size, rect.size)
   const data = this.generateGridData(imgData.data, rect.size)
 
-  document.body.appendChild(cvs)
-
   this.setSize(cvs, rect.size)
   ctx.putImageData(imgData, 0, 0)
 
@@ -200,4 +203,26 @@ exports.addFont = function (str, font) {
     data,
     img: cvs.toDataURL()
   })
+}
+
+exports.fixFont = function (fontLibItem, gridData) {
+  fontLibItem.data = this.combineArray(fontLibItem.data, gridData)
+}
+
+/**
+ * drawGridData
+ * @param {Element} cvs
+ * @param {GridData} gridData
+ * @param {{X, Y, size}} rect
+ */
+exports.drawGridData = function ({ cvs, gridData, rect, fillStyle }) {
+  const ctx = cvs.getContext('2d')
+  const step = rect.size / config.grid
+  for (let y = 0; y < config.grid; y++) {
+    for (let x = 0; x < config.grid; x++) {
+      const index = x + y * config.grid
+      ctx.fillStyle = fillStyle(gridData[index])
+      ctx.fillRect(rect.X + x * step, rect.Y + y * step, step, step)
+    }
+  }
 }

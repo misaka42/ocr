@@ -41,6 +41,20 @@ export default {
       util.addFont(String.fromCharCode(i), `sans-serif`)
     }
 
+    for (let i = 48; i < 91; i++) {
+      if (i > 57 && i < 65) {
+        continue
+      }
+      util.addFont(String.fromCharCode(i), `Verdana`)
+    }
+
+    for (let i = 48; i < 91; i++) {
+      if (i > 57 && i < 65) {
+        continue
+      }
+      util.addFont(String.fromCharCode(i), `Trebuchet MS`)
+    }
+
     this.$nextTick(() => {
       Object.assign(this.$refs.cvs, config.canvas)
       this.$refs.cvs.style.width = config.canvas.width + 'px'
@@ -64,7 +78,8 @@ export default {
       this.drawing = false
     },
     pick (v) {
-      v.data = util.combineArray(v.data, this.gridData)
+//      v.data = util.combineArray(v.data, this.gridData)
+      util.fixFont(v, this.gridData)
       this.reset()
     },
     reset () {
@@ -141,15 +156,12 @@ export default {
       this.showResult = true
 
       const arr = this.lib[0].data
-      const step = this.detect.size / config.grid
-      for (let y = 0; y < config.grid; y++) {
-        for (let x = 0; x < config.grid; x++) {
-//          if (arr[x + config.grid * y] > config.like) {
-          this.ctx.fillStyle = `rgba(255, 0, 0, ${arr[x + config.grid * y]})`
-          this.ctx.fillRect(this.detect.X + x * step, this.detect.Y + y * step, step, step)
-//          }
-        }
-      }
+      util.drawGridData({
+        cvs: this.$refs.cvs,
+        gridData: arr,
+        rect: this.detect,
+        fillStyle: v => `rgba(255, 0, 0, ${v})`
+      })
     }
   }
 }
