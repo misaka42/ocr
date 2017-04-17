@@ -10,6 +10,7 @@
         <li v-for="r in lib" @click="pick(r)">
           <img :src="r.img" :alt="r.value">
           <span>{{r.acc}}%</span>
+          <img class="preview" :src="r.img" :alt="r.value">
         </li>
       </ul>
     </div>
@@ -190,6 +191,7 @@ export default {
     padding: 0;
     list-style: none;
     li {
+      position: relative;
       height: 30px;
       line-height: 30px;
       img {
@@ -197,6 +199,16 @@ export default {
       }
       &:hover {
         background-color: #ddd;
+        .preview {
+          display: block;
+          position: absolute;
+          top: 0;
+          right: -200px;
+          height: 200px;
+        }
+      }
+      .preview {
+        display: none;
       }
     }
   }

@@ -10,7 +10,8 @@ const config = {
     size: 200
   },
   grid: 32,
-  like: 0.35,
+  like: 0.2,
+  accept: 0.6,
   grayThreshold: 128
 }
 
@@ -124,7 +125,7 @@ exports.generateGridData = function (data, size) {
         }
       }
       const percent = px.filter(p => !!p).length / px.length
-      gridData[y + x * grid] = percent > config.like * 2 ? percent : 0
+      gridData[y + x * grid] = percent > config.accept ? percent : 0
     }
   }
   return gridData
@@ -201,12 +202,26 @@ exports.addFont = function (str, font) {
   fontLib.push({
     value: str,
     data,
-    img: cvs.toDataURL()
+    img: cvs.toDataURL(),
+    size: rect.size
   })
 }
 
 exports.fixFont = function (fontLibItem, gridData) {
   fontLibItem.data = this.combineArray(fontLibItem.data, gridData)
+  this.setSize(this._canvas, fontLibItem.size)
+  this.clearCanvas(this._canvas)
+  this.drawGridData({
+    cvs: this._canvas,
+    gridData: fontLibItem.data,
+    rect: {
+      X: 0,
+      Y: 0,
+      size: fontLibItem.size
+    },
+    fillStyle: v => `rgba(0, 0, 0, ${v})`
+  })
+  fontLibItem.img = this._canvas.toDataURL()
 }
 
 /**
