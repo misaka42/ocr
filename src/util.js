@@ -10,8 +10,8 @@ const config = {
     size: 200
   },
   grid: 32,
-  like: 0.2,
-  accept: 0.6,
+  like: 0.05,
+  accept: 0.5,
   grayThreshold: 128
 }
 
@@ -132,11 +132,17 @@ exports.generateGridData = function (data, size) {
 }
 
 exports.compareArray = function (a, b) {
-  const arr = []
+  let matched = 0
   a.forEach((v, i) => {
-    arr.push(Math.abs(v - b[i]) < config.like)
+    if (v === 0 && b[i] === 0) {
+      return
+    }
+    if (Math.abs(v - b[i]) < config.like) {
+      matched++
+    }
   })
-  return parseFloat(100 * arr.filter(v => !!v).length / arr.length).toFixed(2)
+  const validPoint = a.filter(v => v > 0).length + b.filter(v => v > 0).length
+  return parseFloat(matched / validPoint).toFixed(4)
 }
 
 exports.combineArray = function (a, b) {
@@ -230,13 +236,17 @@ exports.fixFont = function (fontLibItem, gridData) {
  * @param {GridData} gridData
  * @param {{X, Y, size}} rect
  */
-exports.drawGridData = function ({ cvs, gridData, rect, fillStyle }) {
+exports.drawGridData = function ({ cvs, gridData, rect, fillStyle, compare }) {
   const ctx = cvs.getContext('2d')
   const step = rect.size / config.grid
   for (let y = 0; y < config.grid; y++) {
     for (let x = 0; x < config.grid; x++) {
       const index = x + y * config.grid
-      ctx.fillStyle = fillStyle(gridData[index])
+      if (compare) {
+        ctx.fillStyle = fillStyle(gridData[index], compare[index])
+      } else {
+        ctx.fillStyle = fillStyle(gridData[index])
+      }
       ctx.fillRect(rect.X + x * step, rect.Y + y * step, step, step)
     }
   }

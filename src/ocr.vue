@@ -7,9 +7,9 @@
         <li v-for="(s, index) in steps" :class="{ active: index <= step }">{{s}}</li>
       </ol>
       <ul v-if="showResult" class="result">
-        <li v-for="r in lib" @click="pick(r)">
+        <li v-for="r in lib" @click="pick(r)" @mouseenter="preview(r)">
           <img :src="r.img" :alt="r.value">
-          <span>{{r.acc}}%</span>
+          <span>{{r.acc}}</span>
           <img class="preview" :src="r.img" :alt="r.value">
         </li>
       </ul>
@@ -42,20 +42,6 @@ export default {
       util.addFont(String.fromCharCode(i), `sans-serif`)
     }
 
-    for (let i = 48; i < 91; i++) {
-      if (i > 57 && i < 65) {
-        continue
-      }
-      util.addFont(String.fromCharCode(i), `Verdana`)
-    }
-
-    for (let i = 48; i < 91; i++) {
-      if (i > 57 && i < 65) {
-        continue
-      }
-      util.addFont(String.fromCharCode(i), `Trebuchet MS`)
-    }
-
     this.$nextTick(() => {
       Object.assign(this.$refs.cvs, config.canvas)
       this.$refs.cvs.style.width = config.canvas.width + 'px'
@@ -79,9 +65,27 @@ export default {
       this.drawing = false
     },
     pick (v) {
-//      v.data = util.combineArray(v.data, this.gridData)
       util.fixFont(v, this.gridData)
       this.reset()
+    },
+    preview (v) {
+      util.clearCanvas(this.$refs.cvs)
+      this.drawUserGridData()
+      util.drawGridData({
+        cvs: this.$refs.cvs,
+        gridData: v.data,
+        rect: this.detect,
+        compare: this.gridData,
+        fillStyle: (a, b) => b > 0 ? `rgba(0, 255, 0, ${a === 0 ? 0 : 1 - Math.abs(a - b)})` : `rgba(255, 0, 0, ${a})`
+      })
+    },
+    drawUserGridData () {
+      util.drawGridData({
+        cvs: this.$refs.cvs,
+        gridData: this.gridData,
+        rect: this.detect,
+        fillStyle: v => `rgba(0, 0, 0, ${v})`
+      })
     },
     reset () {
       this.step = 0
@@ -132,22 +136,9 @@ export default {
     },
     step3 () {
       this.ctx.putImageData(this.autosave[0], 0, 0)
-      const gridData = util.generateGridData(this.ctx.getImageData(this.detect.X, this.detect.Y, this.detect.size, this.detect.size).data, this.detect.size)
-      const step = this.detect.size / config.grid
-      gridData.forEach((v, i) => {
-        if (v > config.like) {
-          this.ctx.fillStyle = `rgba(0, 0, 0, ${parseFloat(v).toFixed(2)})`
-        } else {
-          this.ctx.fillStyle = '#fff'
-        }
-        this.ctx.fillRect(
-          this.detect.X + (i % config.grid) * step,
-          this.detect.Y + parseInt(i / config.grid) * step,
-          step,
-          step
-        )
-      })
-      this.gridData = gridData
+      this.gridData = util.generateGridData(this.ctx.getImageData(this.detect.X, this.detect.Y, this.detect.size, this.detect.size).data, this.detect.size)
+      util.clearCanvas(this.$refs.cvs)
+      this.drawUserGridData()
     },
     step4 () {
       this.lib.forEach(v => {
@@ -156,13 +147,7 @@ export default {
       this.lib.sort((a, b) => b.acc - a.acc)
       this.showResult = true
 
-      const arr = this.lib[0].data
-      util.drawGridData({
-        cvs: this.$refs.cvs,
-        gridData: arr,
-        rect: this.detect,
-        fillStyle: v => `rgba(255, 0, 0, ${v})`
-      })
+      this.preview(this.lib[0])
     }
   }
 }
@@ -194,6 +179,7 @@ export default {
       position: relative;
       height: 30px;
       line-height: 30px;
+      display: inline-block;
       img {
         height: 100%;
       }
