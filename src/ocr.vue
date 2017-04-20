@@ -1,6 +1,6 @@
 <template>
   <div id="ocr">
-    <canvas ref="cvs" @mousemove="mousemove" @mousedown="drawingEnable" @mouseup="drawingDisable" @mouseleave="drawingDisable"></canvas>
+    <canvas ref="cvs" @mousemove="mousemove" @touchmove="mousemove" @mousedown="drawingEnable" @mouseup="drawingDisable" @mouseleave="drawingDisable"></canvas>
     <div class="desc">
       <h5>STEPS</h5>
       <ol>
@@ -158,7 +158,7 @@ export default {
     font: 300 1em/1.8 PingFang SC, Lantinghei SC, Microsoft Yahei, Hiragino Sans GB, Microsoft Sans Serif, WenQuanYi Micro Hei, sans-serif;
   }
   #ocr {
-    display: flex;
+    // display: flex;
   }
   canvas {
     border: 1px solid #ddd;
