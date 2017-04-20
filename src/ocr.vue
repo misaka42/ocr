@@ -1,6 +1,14 @@
 <template>
   <div id="ocr">
-    <canvas ref="cvs" @mousemove="mousemove" @touchmove="mousemove" @mousedown="drawingEnable" @mouseup="drawingDisable" @mouseleave="drawingDisable"></canvas>
+    <canvas ref="cvs"
+      @mousemove="mousemove"
+      @touchmove="mousemove"
+      @mousedown="drawingEnable"
+      @touchstart="drawingEnable"
+      @mouseup="drawingDisable"
+      @touchend="drawingDisable"
+      @mouseleave="drawingDisable">
+    </canvas>
     <div class="desc">
       <h5>STEPS</h5>
       <ol>
@@ -53,6 +61,10 @@ export default {
     mousemove (e) {
       if (this.drawing) {
         this.ctx.beginPath()
+        if (e.touches && e.touches[0]) {
+          e.offsetX = e.touches[0].pageX
+          e.offsetY = e.touches[0].pageY
+        }
         this.ctx.arc(e.offsetX, e.offsetY, config.pen.size, 0, Math.PI * 2)
         this.ctx.fillStyle = config.pen.fillStyle
         this.ctx.fill()
@@ -155,6 +167,8 @@ export default {
 
 <style lang="less">
   body, html {
+    margin: 0;
+    padding: 0;
     font: 300 1em/1.8 PingFang SC, Lantinghei SC, Microsoft Yahei, Hiragino Sans GB, Microsoft Sans Serif, WenQuanYi Micro Hei, sans-serif;
   }
   #ocr {
