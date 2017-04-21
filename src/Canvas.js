@@ -21,7 +21,10 @@ export default class Element {
 
   addEvent (arr, fn) {
     arr.forEach(name => {
-      this.cvs.addEventListener(name, fn.bind(this))
+      this.cvs.addEventListener(name, e => {
+        fn.call(this, e)
+        e.preventDefault()
+      })
     })
   }
 
