@@ -1,6 +1,6 @@
 const config = {
   pen: {
-    size: 10,
+    size: 12,
     fillStyle: '#000'
   },
   canvas: {
@@ -39,7 +39,7 @@ exports.convertImageData = function (data) {
       arr.push(0)
       continue
     }
-    if ((data[i] + data[i + 1] + data[i + 2]) > config.grayThreshold * 3) {
+    if ((data[i] + data[i + 1] + data[i + 2]) > config.grayThreshold * 3 && data[i + 3] < config.accept) {
       arr.push(0)
     } else {
       arr.push(1)
@@ -154,16 +154,16 @@ exports.addCustomFont = function (value) {
 }
 
 exports.fixFont = function (fontLibItem, acc) {
-  const data = this.combineArray(fontLibItem.data, userDraw.data, acc)
   this.setSize(this._canvas, fontLibItem.size)
   this.clearCanvas(this._canvas)
   this.drawArea({
     cvs: this._canvas,
-    data,
+    data: userDraw.data,
+    compare: fontLibItem.data,
     area: { x: 0, y: 0, size: this._canvas.width },
-    style: v => `rgba(0, 0, 0, ${v})`
+    style: (a, b) => `rgba(0, 0, 0, ${a * (1 - acc) + b * acc})`
   })
-  fontLibItem.data = this.getAdjustGridData(this._canvas)
+  fontLibItem.data = this.getAdjustGridData(this._canvas, 0.9)
   this.drawArea({
     cvs: this._canvas,
     data: fontLibItem.data,
@@ -303,7 +303,8 @@ exports.getAdjustArea = function (cvs) {
  * @param {{ x, y, size }} area
  * @return {Array}
  */
-exports.getGridData = function (cvs, area) {
+exports.getGridData = function (cvs, area, acc) {
+  acc = acc || config.accept
   const imageData = cvs.getContext('2d').getImageData(area.x, area.y, area.size, area.size)
   const arr = this.convertImageData(imageData.data)
   const size = area.size
@@ -319,15 +320,15 @@ exports.getGridData = function (cvs, area) {
         }
       }
       const percent = px.filter(p => !!p).length / px.length
-      gridData[y + x * grid] = percent > config.accept ? percent : 0
+      gridData[y + x * grid] = percent > acc ? percent : 0
     }
   }
   return gridData
 }
 
-exports.getAdjustGridData = function (cvs) {
+exports.getAdjustGridData = function (cvs, acc) {
   const area = this.getAdjustArea(cvs)
-  return this.getGridData(cvs, area)
+  return this.getGridData(cvs, area, acc)
 }
 
 /**
