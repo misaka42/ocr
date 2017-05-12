@@ -67,7 +67,7 @@
         }
       },
       confirm () {
-        lib.fixFont(this.pickedItem, 0.7)
+        lib.fixFont(this.pickedItem, 0.5)
         this.pickedItem = null
         this.$router.push({ path: '/' })
       },

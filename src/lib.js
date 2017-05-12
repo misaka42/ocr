@@ -154,9 +154,16 @@ exports.addCustomFont = function (value) {
 }
 
 exports.fixFont = function (fontLibItem, acc) {
-  fontLibItem.data = this.combineArray(fontLibItem.data, userDraw.data, acc)
+  const data = this.combineArray(fontLibItem.data, userDraw.data, acc)
   this.setSize(this._canvas, fontLibItem.size)
   this.clearCanvas(this._canvas)
+  this.drawArea({
+    cvs: this._canvas,
+    data,
+    area: { x: 0, y: 0, size: this._canvas.width },
+    style: v => `rgba(0, 0, 0, ${v})`
+  })
+  fontLibItem.data = this.getAdjustGridData(this._canvas)
   this.drawArea({
     cvs: this._canvas,
     data: fontLibItem.data,
@@ -174,6 +181,7 @@ exports.fixFont = function (fontLibItem, acc) {
  */
 exports.drawArea = function ({ cvs, data, area, style, compare }) {
   const ctx = cvs.getContext('2d')
+  this.clearCanvas(cvs)
   const step = area.size / config.grid
   for (let y = 0; y < config.grid; y++) {
     for (let x = 0; x < config.grid; x++) {
@@ -315,6 +323,11 @@ exports.getGridData = function (cvs, area) {
     }
   }
   return gridData
+}
+
+exports.getAdjustGridData = function (cvs) {
+  const area = this.getAdjustArea(cvs)
+  return this.getGridData(cvs, area)
 }
 
 /**
