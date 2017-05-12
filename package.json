@@ -15,7 +15,8 @@
     "less": "^2.7.2",
     "less-loader": "^4.0.3",
     "normalize.css": "^6.0.0",
-    "vue": "^2.2.2"
+    "vue": "^2.2.2",
+    "vue-router": "^2.5.3"
   },
   "devDependencies": {
     "autoprefixer": "^6.7.2",

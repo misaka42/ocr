@@ -2,18 +2,20 @@ const lib = require('./lib')
 const { config } = lib
 
 export default class Element {
-  constructor (cvs, size = config.canvas.size) {
+  constructor (cvs, size = config.canvas.size, canDraw = true) {
     if (cvs === undefined) {
       cvs = document.createElement('canvas')
     }
     this.cvs = cvs
     this.size = size
+    this.canDraw = canDraw
     this.callback = {}
     this.init(cvs)
   }
 
   init (cvs) {
     lib.setSize(cvs, this.size)
+    if (!this.canDraw) { return }
     this.addEvent(['mousedown', 'touchstart'], this.drawStart)
     this.addEvent(['mouseup', 'mouseleave', 'mouseenter', 'touchend'], this.drawEnd)
     this.addEvent(['mousemove', 'touchmove'], this.drawing)
@@ -54,7 +56,7 @@ export default class Element {
     this.stash()
     const area = this.getAdjustDetectArea()
     const data = lib.getGridData(this.cvs, area)
-    this.callback.finish(data)
+    this.callback.finish && this.callback.finish(data)
     lib.drawAreaBorder({
       cvs: this.cvs,
       area,

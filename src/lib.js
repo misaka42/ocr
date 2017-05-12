@@ -15,9 +15,11 @@ const config = {
 }
 
 const fontLib = []
+const userDraw = {}
 
 exports.config = config
 exports.fontLib = fontLib
+exports.userDraw = userDraw
 
 /**
  * grid data
@@ -60,10 +62,11 @@ exports.compareArray = function (a, b) {
   return parseFloat(matched / validPoint).toFixed(4)
 }
 
-exports.combineArray = function (a, b) {
+exports.combineArray = function (a, b, acc) {
+  acc = acc || 0.5
   const arr = []
   a.forEach((v, i) => {
-    arr.push((v + b[i]) / 2)
+    arr.push(v * (1 - acc) + b[i] * acc)
   })
   return arr
 }
@@ -126,19 +129,39 @@ exports.addFont = function (str, font) {
   })
 }
 
-exports.fixFont = function (fontLibItem, gridData) {
-  fontLibItem.data = this.combineArray(fontLibItem.data, gridData)
+/**
+ * add custom font to fontLib
+ * @param {String} value
+ */
+exports.addCustomFont = function (value) {
+  const cvs = this._canvas
+  const data = userDraw.data
+  this.setSize(cvs, config.canvas.size)
+  this.clearCanvas(cvs)
+  this.drawArea({
+    cvs,
+    data,
+    area: { x: 0, y: 0, size: this._canvas.width },
+    style: v => `rgba(0, 0, 0, ${v})`
+  })
+
+  fontLib.push({
+    value,
+    data,
+    img: cvs.toDataURL(),
+    size: config.canvas.size
+  })
+}
+
+exports.fixFont = function (fontLibItem, acc) {
+  fontLibItem.data = this.combineArray(fontLibItem.data, userDraw.data, acc)
   this.setSize(this._canvas, fontLibItem.size)
   this.clearCanvas(this._canvas)
-  this.drawGridData({
+  this.drawArea({
     cvs: this._canvas,
-    gridData: fontLibItem.data,
-    rect: {
-      X: 0,
-      Y: 0,
-      size: fontLibItem.size
-    },
-    fillStyle: v => `rgba(0, 0, 0, ${v})`
+    data: fontLibItem.data,
+    area: { x: 0, y: 0, size: this._canvas.width },
+    style: v => `rgba(0, 0, 0, ${v})`
   })
   fontLibItem.img = this._canvas.toDataURL()
 }
@@ -156,7 +179,6 @@ exports.drawArea = function ({ cvs, data, area, style, compare }) {
     for (let x = 0; x < config.grid; x++) {
       const index = x + y * config.grid
       if (compare) {
-        console.log(data[index], compare[index])
         ctx.fillStyle = style(data[index], compare[index])
       } else {
         ctx.fillStyle = style(data[index])
@@ -299,6 +321,7 @@ exports.getGridData = function (cvs, area) {
  * init fontLib with 0-9 a-z
  */
 exports.initFontLib = function () {
+  if (fontLib.length) { return }
   for (let i = 48; i < 91; i++) {
     if (i > 57 && i < 65) {
       continue
@@ -308,13 +331,14 @@ exports.initFontLib = function () {
 }
 
 /**
- * find best match font
+ * find best match font and save user data
  * @param {Array} data
  */
 exports.findMatch = function (data) {
   fontLib.forEach(font => {
     font.acc = this.compareArray(data, font.data)
   })
+  userDraw.data = data
   fontLib.sort((a, b) => b.acc - a.acc)
   return fontLib[0]
 }

@@ -6,7 +6,7 @@
       <canvas ref="match"></canvas>
       <img ref="img" :src="imgSrc" alt="img">
     </div>
-    <div id="btns" v-show="state === 2">
+    <div class="bottom-btn-group" v-show="state === 2">
       <button @click="confirm">是</button>
       <button @click="reset">否</button>
     </div>
@@ -35,6 +35,9 @@
     },
     computed: {
       msg () {
+        if (this.state === 2) {
+          return `「 ${this.fontLib[0].value} 」 ` + STATE_MSG[this.state]
+        }
         return STATE_MSG[this.state]
       }
     },
@@ -50,7 +53,7 @@
     methods: {
       init () {
         this._canvas = new Canvas(this.$refs.cvs)
-        this._match = new Canvas(this.$refs.match, config.grid * 4)
+        this._match = new Canvas(this.$refs.match, config.grid * 4, false)
 
         this._canvas.callback.finish = data => {
           this.state = 2
@@ -82,11 +85,13 @@
       reset () {
         this.state = 1
         this._canvas.clear()
+        this.$router.push({ path: '/identify' })
       },
 
       confirm () {
         this.state = 1
         this._canvas.clear()
+        lib.fixFont(this.fontLib[0], 0.1)
       }
     }
   }
